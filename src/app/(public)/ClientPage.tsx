@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useInView, Variants } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 interface ClientPageProps {
   translations: {
     en: Record<string, string>;
     th: Record<string, string>;
   };
+  locale?: 'en' | 'th';
 }
 
 // Animation variants
@@ -58,14 +60,15 @@ function AnimatedSection({ children, className = '' }: { children: React.ReactNo
   );
 }
 
-export default function ClientPage({ translations }: ClientPageProps) {
+export default function ClientPage({ translations, locale = 'en' }: ClientPageProps) {
+  const router = useRouter();
   const [count144, setCount144] = useState(0);
   const [count70, setCount70] = useState(0);
   const [textIndex, setTextIndex] = useState(0);
-  const [locale, setLocale] = useState<'en' | 'th'>('en');
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [scrollY, setScrollY] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const textArray = ['Green', 'Fee', 'Caddy', 'Cart', 'All-In'];
   const textArrayLength = textArray.length;
   
@@ -164,6 +167,44 @@ export default function ClientPage({ translations }: ClientPageProps) {
               PRIME
             </span>
           </motion.a>
+          
+          {/* Mobile: Language switcher + Hamburger */}
+          <div className="flex md:hidden items-center gap-4">
+            <div className="flex items-center gap-0 border border-[#000000]/20 rounded-lg overflow-hidden">
+              {['en', 'th'].map((lang) => (
+                <motion.button
+                  key={lang}
+                  onClick={() => router.push(`/${lang}`)}
+                  className={`px-3 py-1.5 text-xs uppercase font-medium transition-all ${
+                    locale === lang 
+                      ? 'bg-[#4a7c59] text-white' 
+                      : 'bg-white text-[#000000] hover:bg-[#f4f5ef]'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label={`Switch to ${lang === 'en' ? 'English' : 'Thai'}`}
+                >
+                  {lang.toUpperCase()}
+                </motion.button>
+              ))}
+            </div>
+            <motion.button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 text-[#000000] hover:text-[#4a7c59] transition-colors"
+              whileTap={{ scale: 0.95 }}
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </motion.button>
+          </div>
+
+          {/* Desktop: Full menu */}
           <div className="hidden md:flex items-center gap-8 text-lg font-normal text-[#000000] uppercase tracking-wide">
             {[
               { href: '#value', text: t.Benefits },
@@ -189,7 +230,7 @@ export default function ClientPage({ translations }: ClientPageProps) {
               {['en', 'th'].map((lang) => (
                 <motion.button
                   key={lang}
-                  onClick={() => setLocale(lang as 'en' | 'th')}
+                  onClick={() => router.push(`/${lang}`)}
                   className={`px-4 py-2 text-xs md:text-sm uppercase font-medium transition-all ${
                     locale === lang 
                       ? 'bg-[#4a7c59] text-white' 
@@ -205,6 +246,38 @@ export default function ClientPage({ translations }: ClientPageProps) {
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ 
+            height: isMobileMenuOpen ? 'auto' : 0,
+            opacity: isMobileMenuOpen ? 1 : 0
+          }}
+          transition={{ duration: 0.3 }}
+          className="md:hidden overflow-hidden bg-[#fdfcfa] border-t border-[#000000]/10"
+        >
+          <div className="px-6 py-4 space-y-4">
+            {[
+              { href: '#value', text: t.Benefits },
+              { href: '#courses', text: t.Courses },
+              { href: '#pricing', text: t.Pricing },
+              { href: '#contact', text: t.Contact }
+            ].map((link, idx) => (
+              <motion.a
+                key={idx}
+                href={link.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block text-lg font-normal text-[#000000] hover:text-[#4a7c59] transition-colors uppercase tracking-wide py-2"
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                {link.text}
+              </motion.a>
+            ))}
+          </div>
+        </motion.div>
       </motion.nav>
 
       {/* Hero Section */}
@@ -381,9 +454,9 @@ export default function ClientPage({ translations }: ClientPageProps) {
             viewport={{ once: true }}
           >
             {[
-              { number: '144', title: t["Rounds Annually"], desc: 'Generous allocation for client entertainment, team building, and executive networking' },
-              { number: '70+', title: t["Premium Courses"], desc: 'Championship venues to exclusive private clubs across Thailand\'s premier regions' },
-              { number: '1', title: t["Annual Fee"], desc: 'All-inclusive pricing with Personal Concierge handling all arrangements' }
+              { number: '144', title: t["Rounds Annually"], desc: t["Generous allocation for client entertainment, team building, and executive networking"] },
+              { number: '70+', title: t["Premium Courses"], desc: t["Championship venues to exclusive private clubs across Thailand's premier regions"] },
+              { number: '1', title: t["Annual Fee"], desc: t["All-inclusive pricing with Personal Concierge handling all arrangements"] }
             ].map((item, idx) => (
               <motion.div 
                 key={idx}
@@ -411,10 +484,10 @@ export default function ClientPage({ translations }: ClientPageProps) {
             viewport={{ once: true }}
           >
             {[
-              { title: 'Flexible Guest Policy', desc: 'Two registered users, up to 6 guests when both present' },
-              { title: 'Personal Concierge', desc: 'Dedicated service for all bookings and logistics' },
-              { title: 'Predictable Budgeting', desc: 'Fixed annual fee, no hidden charges or surprises' },
-              { title: 'Corporate-Specific', desc: 'Professional service standards across all courses' }
+              { title: t["Flexible Guest Policy"], desc: t["Two registered users, up to 6 guests when both present"] },
+              { title: t["Personal Concierge"], desc: t["Dedicated service for all bookings and logistics"] },
+              { title: t["Predictable Budgeting"], desc: t["Fixed annual fee, no hidden charges or surprises"] },
+              { title: t["Corporate-Specific"], desc: t["Professional service standards across all courses"] }
             ].map((item, idx) => (
               <motion.div 
                 key={idx}
@@ -459,7 +532,7 @@ export default function ClientPage({ translations }: ClientPageProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              20 Premium Championship • 54 Quality Courses
+              {t["20 Premium Championship • 54 Quality Courses"]}
             </motion.p>
           </AnimatedSection>
 
@@ -471,7 +544,7 @@ export default function ClientPage({ translations }: ClientPageProps) {
             viewport={{ once: true }}
           >
             <motion.div className="space-y-4" variants={fadeInUp}>
-              <h3 className="text-lg md:text-xl font-medium text-[#000000] uppercase tracking-[0.25em] mb-6">Premium Championship</h3>
+              <h3 className="text-lg md:text-xl font-medium text-[#000000] uppercase tracking-[0.25em] mb-6">{t["Premium Championship"]}</h3>
               <ul className="space-y-3">
                 {['Thai Country Club • Bangkok', 'Siam Country Club • Pattaya', 'Black Mountain • Hua Hin', 'Blue Canyon • Phuket', 'Alpine Golf Resort • Chiang Mai'].map((course, idx) => (
                   <motion.li 
@@ -488,15 +561,15 @@ export default function ClientPage({ translations }: ClientPageProps) {
               </ul>
             </motion.div>
             <motion.div className="space-y-4" variants={fadeInUp}>
-              <h3 className="text-lg md:text-xl font-medium text-[#000000] uppercase tracking-[0.25em] mb-6">Regional Coverage</h3>
+              <h3 className="text-lg md:text-xl font-medium text-[#000000] uppercase tracking-[0.25em] mb-6">{t["Regional Coverage"]}</h3>
               <div className="space-y-3">
                 {[
-                  { region: 'Bangkok & Central', count: '34' },
-                  { region: 'Pattaya & Eastern', count: '18' },
-                  { region: 'Hua Hin & West', count: '7' },
-                  { region: 'Phuket & South', count: '7' },
-                  { region: 'Khao Yai', count: '5' },
-                  { region: 'Chiang Mai & North', count: '3' }
+                  { region: t["Bangkok & Central"], count: '34' },
+                  { region: t["Pattaya & Eastern"], count: '18' },
+                  { region: t["Hua Hin & West"], count: '7' },
+                  { region: t["Phuket & South"], count: '7' },
+                  { region: t["Khao Yai"], count: '5' },
+                  { region: t["Chiang Mai & North"], count: '3' }
                 ].map((item, idx) => (
                   <motion.div 
                     key={idx} 
@@ -526,7 +599,7 @@ export default function ClientPage({ translations }: ClientPageProps) {
               className="inline-block text-[#000000]/60 hover:text-[#4a7c59] text-lg md:text-xl font-medium uppercase tracking-[0.25em] transition-colors underline decoration-[#000000]/20 hover:decoration-[#4a7c59]/40 underline-offset-4"
               whileHover={{ y: -2 }}
             >
-              Complete Directory
+              {t["Complete Directory"]}
             </motion.a>
           </motion.div>
         </div>
@@ -615,8 +688,8 @@ export default function ClientPage({ translations }: ClientPageProps) {
                 viewport={{ once: true }}
               >
                 {[
-                  '144 rounds per year', '70+ partner courses', 'Green fees included', 'Caddy service included',
-                  'Golf cart per round', 'Two registered users', 'Up to 6 guest privileges', 'Personal Concierge service'
+                  t['144 rounds per year'], t['70+ partner courses'], t['Green fees included'], t['Caddy service included'],
+                  t['Golf cart per round'], t['Two registered users'], t['Up to 6 guest privileges'], t['Personal Concierge service']
                 ].map((feature, idx) => (
                   <motion.div 
                     key={idx} 
@@ -748,9 +821,9 @@ export default function ClientPage({ translations }: ClientPageProps) {
             whileHover={{ y: -5 }}
           >
             {[
-              { icon: '📧', label: 'Email', value: 'membership@primegolf.th' },
-              { icon: '📞', label: 'Phone', value: '+66 2 XXX XXXX' },
-              { icon: '📍', label: 'Office', value: 'Bangkok, Thailand' }
+              { icon: '📧', label: t.Email, value: 'membership@primegolf.th' },
+              { icon: '📞', label: t.Phone, value: '+66 2 XXX XXXX' },
+              { icon: '📍', label: t.Office, value: t["Bangkok, Thailand"] }
             ].map((contact, idx) => (
               <motion.div 
                 key={idx}
@@ -796,19 +869,19 @@ export default function ClientPage({ translations }: ClientPageProps) {
             <motion.div variants={fadeInUp}>
               <h3 className="text-xl font-bold tracking-[0.2em] mb-4 text-[#fdfcfa]">PRIME</h3>
               <p className="text-sm text-[#fdfcfa]/70 tracking-wide leading-relaxed">
-                Corporate Golf Membership<br /><br />
-                Welcome to a new standard in corporate benefits, where golf and business meet
+                {t["Corporate Golf Membership"]}<br /><br />
+                {t["Welcome to a new standard in corporate benefits, where golf and business meet"]}
               </p>
             </motion.div>
 
             {/* Column 2: Membership */}
             <motion.div variants={fadeInUp}>
-              <h3 className="text-sm font-medium uppercase tracking-[0.2em] mb-4 text-[#fdfcfa]">Membership</h3>
+              <h3 className="text-sm font-medium uppercase tracking-[0.2em] mb-4 text-[#fdfcfa]">{t.Membership}</h3>
               <ul className="space-y-2">
                 {[
-                  { label: 'Benefits', href: '#value' },
-                  { label: 'Courses', href: '#courses' },
-                  { label: 'Pricing', href: '#pricing' }
+                  { label: t.Benefits, href: '#value' },
+                  { label: t.Courses, href: '#courses' },
+                  { label: t.Pricing, href: '#pricing' }
                 ].map((link, idx) => (
                   <motion.li key={idx} whileHover={{ x: 5 }}>
                     <a href={link.href} className="text-sm text-[#fdfcfa]/50 hover:text-[#4a7c59] transition-colors tracking-wide">{link.label}</a>
@@ -819,14 +892,14 @@ export default function ClientPage({ translations }: ClientPageProps) {
 
             {/* Column 3: Resources */}
             <motion.div variants={fadeInUp}>
-              <h3 className="text-sm font-medium uppercase tracking-[0.2em] mb-4 text-[#fdfcfa]">Resources</h3>
+              <h3 className="text-sm font-medium uppercase tracking-[0.2em] mb-4 text-[#fdfcfa]">{t.Resources}</h3>
               <ul className="space-y-2">
                 {[
-                  { label: 'Fact Sheet', href: `/${locale}/fact-sheet` },
-                  { label: 'Course Directory', href: `/${locale}/course-directory` },
-                  { label: 'Member Agreement', href: `/${locale}/membership-agreement` },
-                  { label: 'Terms & Conditions', href: `/${locale}/terms-and-conditions` },
-                  { label: 'Privacy Policy', href: `/${locale}/privacy-policy` }
+                  { label: t["Fact Sheet"], href: `/${locale}/fact-sheet` },
+                  { label: t["Course Directory"], href: `/${locale}/course-directory` },
+                  { label: t["Member Agreement"], href: `/${locale}/membership-agreement` },
+                  { label: t["Terms & Conditions"], href: `/${locale}/terms-and-conditions` },
+                  { label: t["Privacy Policy"], href: `/${locale}/privacy-policy` }
                 ].map((link, idx) => (
                   <motion.li key={idx} whileHover={{ x: 5 }}>
                     <a href={link.href} className="text-sm text-[#fdfcfa]/50 hover:text-[#4a7c59] transition-colors tracking-wide">{link.label}</a>
@@ -837,7 +910,7 @@ export default function ClientPage({ translations }: ClientPageProps) {
 
             {/* Column 4: Contact */}
             <motion.div variants={fadeInUp}>
-              <h3 className="text-sm font-medium uppercase tracking-[0.2em] mb-4 text-[#fdfcfa]">Contact</h3>
+              <h3 className="text-sm font-medium uppercase tracking-[0.2em] mb-4 text-[#fdfcfa]">{t.Contact}</h3>
               <ul className="space-y-3">
                 <li>
                   <a href="mailto:membership@primegolf.in.th" className="text-sm text-[#fdfcfa]/70 hover:text-[#4a7c59] transition-colors tracking-wide">
@@ -856,14 +929,14 @@ export default function ClientPage({ translations }: ClientPageProps) {
                 </li>
                 <li className="pt-4">
                   <p className="text-xs text-[#fdfcfa]/50 tracking-wide">
-                    Launching March 1, 2026
+                    {t["Launching March 1, 2026"]}
                   </p>
                 </li>
               </ul>
             </motion.div>
           </motion.div>
           <div className="border-t border-[#fdfcfa]/10 pt-6 text-center">
-            <p className="text-xs text-[#fdfcfa]/20 tracking-[0.25em] uppercase">© 2025 PRIME Corporate Golf Membership. All Rights Reserved.</p>
+            <p className="text-xs text-[#fdfcfa]/20 tracking-[0.25em] uppercase">{t["© 2025 PRIME Corporate Golf Membership. All Rights Reserved."]}</p>
           </div>
         </div>
       </footer>
