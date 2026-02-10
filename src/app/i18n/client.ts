@@ -4,12 +4,6 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation as useTranslationOrg } from 'react-i18next';
-import i18n from './index';
-
-// Ensure i18n is initialized
-if (typeof window !== 'undefined') {
-  i18n;
-}
 
 export function useTranslation(lng: string, ns: string = 'common') {
   const ret = useTranslationOrg(ns);
