@@ -174,18 +174,18 @@ export default async function PrivacyPolicyPage({
               <p className="leading-relaxed mb-2">
                 {t("Privacy.Section11.Content1")}
               </p>
-              <div className="border border-[#000000]/50 p-4 mt-3 flex items-start">
-                <div className="flex flex-col items-start w-1/2  p-3 rounded">
+              <div className="border border-[#000000]/50 p-4 mt-3 flex flex-col md:flex-row md:items-start gap-4">
+                <div className="flex flex-col items-start md:w-1/2 p-3 rounded">
                   <p className="font-semibold text-lg">
                     {t("Privacy.Section11.PRIME")}
                   </p>
                   <p className="text-sm">{t("Privacy.Section11.SubPrime")}</p>
                 </div>
-                <div className="flex flex-col items-end w-1/2 ml-6">
+                <div className="flex flex-col items-start md:items-end md:w-1/2 md:ml-2">
                   <p className="text-sm mb-1">
                     <strong>{t("Email")}:</strong>{" "}
-                    {t("Privacy.Section11.Email")}
-                  </p>
+                    <span className="break-all">{t("Privacy.Section11.Email")}</span>
+                  </p> 
                   <p className="text-sm mb-1">
                     <strong>{t("Phone")}:</strong>{" "}
                     {t("Privacy.Section11.Phone")}
